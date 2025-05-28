@@ -25,6 +25,15 @@
       width: 100%;
       height: 100%;
       display: block;
+      z-index: 1;
+    }
+
+    .css3d-renderer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      pointer-events: none;
     }
 
     .ui-overlay {
@@ -77,6 +86,19 @@
       margin: 0 0 8px;
       font-size: 1rem;
       text-shadow: 0 0 5px #ffd700;
+    }
+
+    .news-hud p {
+      margin: 5px 0;
+    }
+
+    .news-hud p#ca-copy {
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .news-hud p#ca-copy:hover {
+      color: #ffd700;
     }
 
     .social-links {
@@ -161,7 +183,7 @@
       .social-links a { width: 25px; height: 25px; font-size: 1rem; }
       .social-links a#tg-link:hover::after { font-size: 0.6rem; padding: 4px 8px; }
       .info-panel { width: 95%; font-size: 0.8rem; }
-      .css3d-iframe { width: 280px; height: 158px; }
+      .css3d-iframe { width: 640px; height: 360px; }
     }
 
     @media (max-width: 480px) {
@@ -170,7 +192,7 @@
       .social-links a { width: 20px; height: 20px; font-size: 0.9rem; }
       .social-links a#tg-link:hover::after { font-size: 0.5rem; padding: 3px 6px; }
       .info-panel { font-size: 0.7rem; padding: 10px; }
-      .css3d-iframe { width: 200px; height: 113px; }
+      .css3d-iframe { width: 320px; height: 180px; }
     }
   </style>
 </head>
@@ -184,10 +206,11 @@
     <p>🚀 $SUI skyrockets to the MOON!</p>
     <p>💰 Staking pool live now!</p>
     <p>🔥 Airdrop event next week!</p>
+    <p id="ca-copy">📜 CA: SOON</p>
   </div>
   <div class="social-links">
-    <a href="https://x.com" target="_blank">X</a>
-    <a href="https://t.me" target="_blank" id="tg-link">TG</a>
+    <a href="https://x.com/wwe_suidown" target="_blank">X</a>
+    <a href="#" target="_blank" id="tg-link">TG</a>
   </div>
   <audio id="soundtrack" loop>
     <source src="soundtrack.mp3" type="audio/mpeg">
@@ -211,19 +234,19 @@
     cssRenderer.setSize(window.innerWidth, window.innerHeight);
     cssRenderer.domElement.style.position = 'absolute';
     cssRenderer.domElement.style.top = '0';
-    cssRenderer.domElement.style.pointerEvents = 'none';
+    cssRenderer.domElement.className = 'css3d-renderer';
     document.body.appendChild(cssRenderer.domElement);
 
     // Camera position and initial rotation
-    camera.position.set(0, 1.5, 0);
-    camera.lookAt(0, 1.5, -4);
+    camera.position.set(0, 2.0, 0);
+    camera.lookAt(0, 2.0, -1);
 
     // Mouse/touch rotation with damping
     let isDragging = false;
     let previousPosition = { x: 0, y: 0 };
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    const mouseSensitivity = isMobile ? 0.0015 : 0.002; // Reduced for smoother movement
-    const dampingFactor = 0.1; // For smooth interpolation
+    const mouseSensitivity = isMobile ? 0.0015 : 0.002;
+    const dampingFactor = 0.1;
     let targetRotation = new THREE.Euler(camera.rotation.x, camera.rotation.y, 0);
     let currentRotation = new THREE.Euler().copy(targetRotation);
 
@@ -232,7 +255,7 @@
       const x = event.clientX || (event.touches && event.touches[0].clientX) || 0;
       const y = event.clientY || (event.touches && event.touches[0].clientY) || 0;
       previousPosition = { x, y };
-      event.preventDefault(); // Prevent scrolling on mobile
+      event.preventDefault();
     }
 
     function onDrag(event) {
@@ -276,7 +299,7 @@
                   useDeviceControls = true;
                   deviceControls.enabled = true;
                   camera.rotation.set(0, 0, 0);
-                  camera.lookAt(0, 1.5, -4);
+                  camera.lookAt(0, 2.0, -1);
                   targetRotation.set(0, 0, 0);
                   currentRotation.set(0, 0, 0);
                 }
@@ -327,20 +350,35 @@
     try {
       const iframe = document.createElement('iframe');
       iframe.className = 'css3d-iframe';
-      iframe.width = 560;
-      iframe.height = 315;
-      iframe.src = 'https://www.youtube.com/embed/u AesirXg?si=z-I9_aPgzqOaImfz&start=1';
+      iframe.width = 1280;
+      iframe.height = 720;
+      iframe.src = 'https://www.youtube.com/embed/uMOQYwOxo-M?autoplay=1&mute=1&start=2&controls=0';
+      iframe.title = 'YouTube video player';
       iframe.frameBorder = '0';
       iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
       iframe.allowFullscreen = true;
+      iframe.style.pointerEvents = 'auto';
 
       const cssObject = new THREE.CSS3DObject(iframe);
-      cssObject.position.set(0, 3.0, -4);
-      cssObject.scale.set(0.002, 0.002, 0.002);
+      cssObject.position.set(0, 2.0, -5.0); // Farther back, behind Tokenomics/About Us
+      cssObject.scale.set(0.005, 0.005, 0.005);
       scene.add(cssObject);
     } catch (err) {
       console.error('YouTube billboard error:', err);
     }
+
+    // Copyable CA in news HUD
+    document.getElementById('ca-copy').addEventListener('click', () => {
+      const ca = 'SOON';
+      navigator.clipboard.writeText(ca).then(() => {
+        const caElement = document.getElementById('ca-copy');
+        const originalText = caElement.textContent;
+        caElement.textContent = '📜 Copied!';
+        setTimeout(() => {
+          caElement.textContent = originalText;
+        }, 2000);
+      });
+    });
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0x404040);
@@ -462,7 +500,6 @@
     const uiGeometry = new THREE.PlaneGeometry(1.5, 0.4);
     const uiElements = [
       { text: 'Tokenomics', angle: -5 * Math.PI / 12, id: 'tokenomics' },
-      { text: 'CA: Soon', angle: 0, id: 'ca' },
       { text: 'About Us', angle: 5 * Math.PI / 12, id: 'about' }
     ];
 
@@ -506,28 +543,20 @@
           case 'tokenomics':
             showInfoPanel(`
               <h3>Tokenomics</h3>
-              <p>Total Supply: 1,000,000,000 $SUI</p>
-              <p>Distribution: 50% Community, 30% Liquidity, 20% Team (locked)</p>
-              <p>Staking Rewards: 5% APY</p>
+              <p>Total Supply: 10,000,000,000 $SUI</p>
+              <p>Distribution: 8% Dev, 92% Public</p>
+              <p>Liquidity: 100% Burned</p>
+              <p>Launched in movepump</p>
               <button onclick="this.parentElement.remove()">Close</button>
             `);
-            break;
-          case 'ca':
-            const ca = '0x1234567890abcdef1234567890abcdef12345678';
-            navigator.clipboard.writeText(ca).then(() => {
-              showInfoPanel(`
-                <h3>Contract Address</h3>
-                <p>Copied: ${ca.substring(0, 6)}...${ca.slice(-4)}</p>
-                <button onclick="this.parentElement.remove()">Close</button>
-              `);
-            });
             break;
           case 'about':
             showInfoPanel(`
               <h3>About Us</h3>
-              <p>SuIDown Memecoin: The ultimate wrestling-themed crypto!</p>
-              <p>Mission: Bring hype and gains to the blockchain.</p>
-              <p>Team: Crypto enthusiasts and wrestling fans united.</p>
+              <p>SuIDown Memecoin: The ultimate crypto cage match in the WWE arena of blockchain!</p>
+              <p>No prelaunch, no team allocation—just pure degen chaos in a steel-cage throwdown!</p>
+              <p>Future: Get ready for a blockchain Royal Rumble and PVP battles where degens clash for glory!</p>
+              <p>Promises: Millionaires made overnight, $SUI to the MOON, and a championship belt for every holder!</p>
               <button onclick="this.parentElement.remove()">Close</button>
             `);
             break;
@@ -546,7 +575,6 @@
           camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x, Math.PI / 4, 3 * Math.PI / 4);
         } else {
           camera.position.set(0, 2.0, 0);
-          // Smoothly interpolate camera rotation
           const currentQuat = new THREE.Quaternion().setFromEuler(currentRotation);
           const targetQuat = new THREE.Quaternion().setFromEuler(targetRotation);
           currentQuat.slerp(targetQuat, dampingFactor);
