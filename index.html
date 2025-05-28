@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuIDown Memecoin Arena</title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Anton', sans-serif;
+      color: #fff;
+      background: #111;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .ui-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ui-overlay button {
+      padding: 8px 16px;
+      background: #ffd700;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Anton', sans-serif;
+      font-size: 0.9rem;
+      transition: transform 0.2s;
+      box-shadow: 0 0 10px #ffd700;
+    }
+
+    .ui-overlay button:hover {
+      transform: scale(1.05);
+    }
+
+    .news-hud {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 300px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.9);
+      border: 2px solid #ffd700;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+      z-index: 10;
+      text-align: center;
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+
+    .news-hud h3 {
+      color: #ffd700;
+      margin: 0 0 8px;
+      font-size: 1rem;
+      text-shadow: 0 0 5px #ffd700;
+    }
+
+    .social-links {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .social-links a {
+      width: 30px;
+      height: 30px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #000;
+      font-size: 1.2rem;
+      transition: transform 0.2s;
+      box-shadow: 0 0 8px #ffd700;
+      position: relative;
+    }
+
+    .social-links a:hover {
+      transform: scale(1.1);
+    }
+
+    .social-links a#tg-link:hover::after {
+      content: 'Setting things up';
+      position: absolute;
+      top: 40px;
+      right: -10px;
+      background: rgba(0, 0, 0, 0.9);
+      color: #ffd700;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      z-index: 15;
+    }
+
+    .info-panel {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      padding: 15px;
+      border: 2px solid #ffd700;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Anton', sans-serif;
+      z-index: 20;
+      text-align: center;
+      max-width: 90%;
+      width: 300px;
+      box-shadow: 0 0 15px #ffd700;
+    }
+
+    .info-panel button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background: #ffd700;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Anton', sans-serif;
+    }
+
+    .css3d-iframe {
+      pointer-events: auto;
+    }
+
+    @media (max-width: 768px) {
+      .ui-overlay button { padding: 6px 12px; font-size: 0.8rem; }
+      .news-hud { width: 95%; font-size: 0.7rem; padding: 8px; }
+      .social-links a { width: 25px; height: 25px; font-size: 1rem; }
+      .social-links a#tg-link:hover::after { font-size: 0.6rem; padding: 4px 8px; }
+      .info-panel { width: 95%; font-size: 0.8rem; }
+      .css3d-iframe { width: 280px; height: 158px; }
+    }
+
+    @media (max-width: 480px) {
+      .news-hud { bottom: 5px; font-size: 0.6rem; }
+      .ui-overlay button { font-size: 0.7rem; padding: 5px 10px; }
+      .social-links a { width: 20px; height: 20px; font-size: 0.9rem; }
+      .social-links a#tg-link:hover::after { font-size: 0.5rem; padding: 3px 6px; }
+      .info-panel { font-size: 0.7rem; padding: 10px; }
+      .css3d-iframe { width: 200px; height: 113px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ui-overlay">
+    <button id="toggleSettings">Toggle Settings</button>
+    <button id="toggleAudio">Play Audio</button>
+  </div>
+  <div class="news-hud">
+    <h3>Latest SuIDown Memecoin Updates</h3>
+    <p>🚀 $SUI skyrockets to the MOON!</p>
+    <p>💰 Staking pool live now!</p>
+    <p>🔥 Airdrop event next week!</p>
+  </div>
+  <div class="social-links">
+    <a href="https://x.com" target="_blank">X</a>
+    <a href="https://t.me" target="_blank" id="tg-link">TG</a>
+  </div>
+  <audio id="soundtrack" loop>
+    <source src="soundtrack.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/DeviceOrientationControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS3DRenderer.js"></script>
+  <script>
+    // Scene setup
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x111111);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // CSS3D Renderer for YouTube iframe
+    const cssRenderer = new THREE.CSS3DRenderer();
+    cssRenderer.setSize(window.innerWidth, window.innerHeight);
+    cssRenderer.domElement.style.position = 'absolute';
+    cssRenderer.domElement.style.top = '0';
+    cssRenderer.domElement.style.pointerEvents = 'none';
+    document.body.appendChild(cssRenderer.domElement);
+
+    // Camera position and initial rotation
+    camera.position.set(0, 1.5, 0);
+    camera.lookAt(0, 1.5, -4);
+
+    // Mouse/touch rotation with damping
+    let isDragging = false;
+    let previousPosition = { x: 0, y: 0 };
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    const mouseSensitivity = isMobile ? 0.0015 : 0.002; // Reduced for smoother movement
+    const dampingFactor = 0.1; // For smooth interpolation
+    let targetRotation = new THREE.Euler(camera.rotation.x, camera.rotation.y, 0);
+    let currentRotation = new THREE.Euler().copy(targetRotation);
+
+    function startDrag(event) {
+      isDragging = true;
+      const x = event.clientX || (event.touches && event.touches[0].clientX) || 0;
+      const y = event.clientY || (event.touches && event.touches[0].clientY) || 0;
+      previousPosition = { x, y };
+      event.preventDefault(); // Prevent scrolling on mobile
+    }
+
+    function onDrag(event) {
+      if (!isDragging) return;
+      const x = event.clientX || (event.touches && event.touches[0].clientX) || previousPosition.x;
+      const y = event.clientY || (event.touches && event.touches[0].clientY) || previousPosition.y;
+      const deltaX = x - previousPosition.x;
+      const deltaY = y - previousPosition.y;
+      targetRotation.y -= deltaX * mouseSensitivity;
+      targetRotation.x -= deltaY * mouseSensitivity;
+      targetRotation.x = THREE.MathUtils.clamp(targetRotation.x, -Math.PI / 3, Math.PI / 3);
+      targetRotation.y = THREE.MathUtils.clamp(targetRotation.y, -Math.PI / 2, Math.PI / 2);
+      previousPosition = { x, y };
+      event.preventDefault();
+    }
+
+    function endDrag() {
+      isDragging = false;
+    }
+
+    // Event listeners for mouse and touch
+    renderer.domElement.addEventListener('mousedown', startDrag);
+    renderer.domElement.addEventListener('mousemove', onDrag);
+    renderer.domElement.addEventListener('mouseup', endDrag);
+    renderer.domElement.addEventListener('mouseleave', endDrag);
+    renderer.domElement.addEventListener('touchstart', startDrag, { passive: false });
+    renderer.domElement.addEventListener('touchmove', onDrag, { passive: false });
+    renderer.domElement.addEventListener('touchend', endDrag);
+
+    // DeviceOrientationControls for mobile tilting
+    let deviceControls = null;
+    let useDeviceControls = false;
+    if (isMobile && window.DeviceOrientationEvent) {
+      try {
+        deviceControls = new THREE.DeviceOrientationControls(camera);
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          document.getElementById('toggleSettings').addEventListener('click', () => {
+            DeviceOrientationEvent.requestPermission()
+              .then(response => {
+                if (response === 'granted') {
+                  useDeviceControls = true;
+                  deviceControls.enabled = true;
+                  camera.rotation.set(0, 0, 0);
+                  camera.lookAt(0, 1.5, -4);
+                  targetRotation.set(0, 0, 0);
+                  currentRotation.set(0, 0, 0);
+                }
+              })
+              .catch(err => console.error('DeviceOrientation permission error:', err));
+          });
+        } else {
+          useDeviceControls = true;
+          deviceControls.enabled = true;
+        }
+      } catch (err) {
+        console.error('DeviceOrientationControls init error:', err);
+      }
+    }
+
+    // Initial note
+    const initialNote = document.createElement('div');
+    initialNote.className = 'info-panel';
+    initialNote.innerHTML = isMobile
+      ? `
+        <h3>Welcome to SuIDown Arena!</h3>
+        <p>Swipe to rotate the view or click Toggle Settings to enable tilt controls.</p>
+        <button onclick="this.parentElement.remove()">Got it!</button>
+      `
+      : `
+        <h3>Welcome to SuIDown Arena!</h3>
+        <p>Click and drag to rotate the view.</p>
+        <button onclick="this.parentElement.remove()">Got it!</button>
+      `;
+    document.body.appendChild(initialNote);
+
+    // Audio control
+    const audio = document.getElementById('soundtrack');
+    audio.volume = 0.2;
+    const toggleAudioButton = document.getElementById('toggleAudio');
+    toggleAudioButton.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play().then(() => {
+          toggleAudioButton.textContent = 'Pause Audio';
+        }).catch(err => console.error('Audio play error:', err));
+      } else {
+        audio.pause();
+        toggleAudioButton.textContent = 'Play Audio';
+      }
+    });
+
+    // YouTube billboard
+    try {
+      const iframe = document.createElement('iframe');
+      iframe.className = 'css3d-iframe';
+      iframe.width = 560;
+      iframe.height = 315;
+      iframe.src = 'https://www.youtube.com/embed/u AesirXg?si=z-I9_aPgzqOaImfz&start=1';
+      iframe.frameBorder = '0';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+
+      const cssObject = new THREE.CSS3DObject(iframe);
+      cssObject.position.set(0, 3.0, -4);
+      cssObject.scale.set(0.002, 0.002, 0.002);
+      scene.add(cssObject);
+    } catch (err) {
+      console.error('YouTube billboard error:', err);
+    }
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x404040);
+    scene.add(ambientLight);
+    const pointLight = new THREE.PointLight(0xffd700, 1, 50);
+    pointLight.position.set(0, 5, 0);
+    scene.add(pointLight);
+
+    // Texture loader with error handling
+    const textureLoader = new THREE.TextureLoader();
+    function loadTexture(url) {
+      return new Promise((resolve) => {
+        textureLoader.load(
+          url,
+          (texture) => resolve(texture),
+          undefined,
+          (err) => {
+            console.error(`Failed to load texture ${url}:`, err);
+            resolve(null);
+          }
+        );
+      });
+    }
+
+    // Ring mat with logo.png
+    loadTexture('logo.png').then(matTexture => {
+      const matGeometry = new THREE.PlaneGeometry(8, 8);
+      const matMaterial = new THREE.MeshBasicMaterial({
+        map: matTexture,
+        side: THREE.DoubleSide,
+        color: matTexture ? 0xffffff : 0x555555
+      });
+      const mat = new THREE.Mesh(matGeometry, matMaterial);
+      mat.rotation.x = -Math.PI / 2;
+      mat.position.y = 0;
+      scene.add(mat);
+    });
+
+    // Background with ring.png
+    loadTexture('ring.png').then(bgTexture => {
+      const bgGeometry = new THREE.SphereGeometry(20, 32, 32);
+      const bgMaterial = new THREE.MeshBasicMaterial({
+        map: bgTexture,
+        side: THREE.BackSide,
+        color: bgTexture ? 0xffffff : 0x333333
+      });
+      const bg = new THREE.Mesh(bgGeometry, bgMaterial);
+      bg.position.set(0, 0, 0);
+      scene.add(bg);
+    });
+
+    // Ropes
+    const ropeGeometry = new THREE.BoxGeometry(8, 0.1, 0.1);
+    const ropeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const ropePositions = [
+      [0, 0.8, -4], [0, 1.1, -4], [0, 1.4, -4],
+      [0, 0.8, 4], [0, 1.1, 4], [0, 1.4, 4],
+      [-4, 0.8, 0], [-4, 1.1, 0], [-4, 1.4, 0],
+      [4, 0.8, 0], [4, 1.1, 0], [4, 1.4, 0]
+    ];
+    ropePositions.forEach(pos => {
+      const rope = new THREE.Mesh(ropeGeometry, ropeMaterial);
+      rope.position.set(pos[0], pos[1], pos[2]);
+      if (pos[0] !== 0) rope.rotation.y = Math.PI / 2;
+      scene.add(rope);
+    });
+
+    // Turnbuckles
+    const tbGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+    const tbMaterial = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+    const tbPositions = [
+      [4, 1, 4], [4, 1, -4], [-4, 1, 4], [-4, 1, -4]
+    ];
+    tbPositions.forEach(pos => {
+      const tb = new THREE.Mesh(tbGeometry, tbMaterial);
+      tb.position.set(pos[0], pos[1], pos[2]);
+      scene.add(tb);
+    });
+
+    // Particle system
+    const particleCount = 100;
+    const particles = new THREE.BufferGeometry();
+    const posArray = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      posArray[i] = (Math.random() - 0.5) * 20;
+      posArray[i + 1] = Math.random() * 5;
+      posArray[i + 2] = (Math.random() - 0.5) * 20;
+    }
+    particles.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    const particleMaterial = new THREE.PointsMaterial({
+      color: 0xffd700,
+      size: 0.1,
+      transparent: true,
+      opacity: 0.8
+    });
+    const particleSystem = new THREE.Points(particles, particleMaterial);
+    scene.add(particleSystem);
+
+    // UI elements
+    function createTextTexture(text, width = 512, height = 128) {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+      ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = '#ffd700';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(0, 0, width, height);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '48px Anton';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, width / 2, height / 2);
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    const uiRadius = 1;
+    const uiGeometry = new THREE.PlaneGeometry(1.5, 0.4);
+    const uiElements = [
+      { text: 'Tokenomics', angle: -5 * Math.PI / 12, id: 'tokenomics' },
+      { text: 'CA: Soon', angle: 0, id: 'ca' },
+      { text: 'About Us', angle: 5 * Math.PI / 12, id: 'about' }
+    ];
+
+    const uiMeshes = [];
+    uiElements.forEach(element => {
+      const material = new THREE.MeshBasicMaterial({
+        map: createTextTexture(element.text),
+        transparent: true
+      });
+      const mesh = new THREE.Mesh(uiGeometry, material);
+      mesh.position.set(
+        uiRadius * Math.sin(element.angle),
+        2.0,
+        -uiRadius * Math.cos(element.angle)
+      );
+      mesh.rotation.y = -element.angle;
+      mesh.userData.id = element.id;
+      scene.add(mesh);
+      uiMeshes.push(mesh);
+    });
+
+    // Raycaster for UI
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    function showInfoPanel(content) {
+      const panel = document.createElement('div');
+      panel.className = 'info-panel';
+      panel.innerHTML = content;
+      document.body.appendChild(panel);
+    }
+
+    window.addEventListener('click', (event) => {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(uiMeshes);
+      if (intersects.length > 0) {
+        const mesh = intersects[0].object;
+        switch (mesh.userData.id) {
+          case 'tokenomics':
+            showInfoPanel(`
+              <h3>Tokenomics</h3>
+              <p>Total Supply: 1,000,000,000 $SUI</p>
+              <p>Distribution: 50% Community, 30% Liquidity, 20% Team (locked)</p>
+              <p>Staking Rewards: 5% APY</p>
+              <button onclick="this.parentElement.remove()">Close</button>
+            `);
+            break;
+          case 'ca':
+            const ca = '0x1234567890abcdef1234567890abcdef12345678';
+            navigator.clipboard.writeText(ca).then(() => {
+              showInfoPanel(`
+                <h3>Contract Address</h3>
+                <p>Copied: ${ca.substring(0, 6)}...${ca.slice(-4)}</p>
+                <button onclick="this.parentElement.remove()">Close</button>
+              `);
+            });
+            break;
+          case 'about':
+            showInfoPanel(`
+              <h3>About Us</h3>
+              <p>SuIDown Memecoin: The ultimate wrestling-themed crypto!</p>
+              <p>Mission: Bring hype and gains to the blockchain.</p>
+              <p>Team: Crypto enthusiasts and wrestling fans united.</p>
+              <button onclick="this.parentElement.remove()">Close</button>
+            `);
+            break;
+        }
+      }
+    });
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      try {
+        if (isMobile && useDeviceControls && deviceControls && deviceControls.enabled) {
+          deviceControls.update();
+          camera.position.set(0, 2.0, 0);
+          camera.rotation.y = THREE.MathUtils.clamp(camera.rotation.y, -Math.PI / 2, Math.PI / 2);
+          camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x, Math.PI / 4, 3 * Math.PI / 4);
+        } else {
+          camera.position.set(0, 2.0, 0);
+          // Smoothly interpolate camera rotation
+          const currentQuat = new THREE.Quaternion().setFromEuler(currentRotation);
+          const targetQuat = new THREE.Quaternion().setFromEuler(targetRotation);
+          currentQuat.slerp(targetQuat, dampingFactor);
+          currentRotation.setFromQuaternion(currentQuat);
+          camera.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z);
+        }
+        const positions = particleSystem.geometry.attributes.position.array;
+        for (let i = 1; i < positions.length; i += 3) {
+          positions[i] -= 0.01;
+          if (positions[i] < 0) positions[i] = 5;
+        }
+        particleSystem.geometry.attributes.position.needsUpdate = true;
+        renderer.render(scene, camera);
+        cssRenderer.render(scene, camera);
+      } catch (err) {
+        console.error('Render error:', err);
+      }
+    }
+    animate();
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      cssRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Settings UI
+    document.getElementById('toggleSettings').addEventListener('click', () => {
+      const settings = document.createElement('div');
+      settings.className = 'info-panel';
+      settings.innerHTML = `
+        <h3>Memecoin Settings</h3>
+        <p>Graphics: High</p>
+        <p>Controls: ${isMobile ? 'Touch/Tilt' : 'Mouse'}</p>
+        <button onclick="this.parentElement.remove()">Close</button>
+      `;
+      document.body.appendChild(settings);
+    });
+  </script>
+</body>
+</html>
