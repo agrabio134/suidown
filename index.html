@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SuIDown Memecoin Arena</title>
+  <link rel="icon" type="image/png" href="/logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
   <style>
     * {
@@ -199,7 +200,7 @@
 <body>
   <div class="ui-overlay">
     <button id="toggleSettings">Toggle Settings</button>
-    <button id="toggleAudio">Play Audio</button>
+    <button id="toggleAudio">Pause Audio</button>
   </div>
   <div class="news-hud">
     <h3>Latest SuIDown Memecoin Updates</h3>
@@ -212,7 +213,7 @@
     <a href="https://x.com/wwe_suidown" target="_blank">X</a>
     <a href="#" target="_blank" id="tg-link">TG</a>
   </div>
-  <audio id="soundtrack" loop>
+  <audio id="soundtrack" loop autoplay>
     <source src="soundtrack.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
@@ -321,6 +322,7 @@
     initialNote.innerHTML = isMobile
       ? `
         <h3>Welcome to SuIDown Arena!</h3>
+        <p>For the best experience, use desktop. Mobile support is coming soon!</p>
         <p>Swipe to rotate the view or click Toggle Settings to enable tilt controls.</p>
         <button onclick="this.parentElement.remove()">Got it!</button>
       `
@@ -335,6 +337,7 @@
     const audio = document.getElementById('soundtrack');
     audio.volume = 0.2;
     const toggleAudioButton = document.getElementById('toggleAudio');
+    audio.play().catch(err => console.error('Audio play error:', err));
     toggleAudioButton.addEventListener('click', () => {
       if (audio.paused) {
         audio.play().then(() => {
@@ -360,7 +363,7 @@
       iframe.style.pointerEvents = 'auto';
 
       const cssObject = new THREE.CSS3DObject(iframe);
-      cssObject.position.set(0, 2.0, -5.0); // Farther back, behind Tokenomics/About Us
+      cssObject.position.set(0, 2.0, -5.0);
       cssObject.scale.set(0.005, 0.005, 0.005);
       scene.add(cssObject);
     } catch (err) {
@@ -553,7 +556,7 @@
           case 'about':
             showInfoPanel(`
               <h3>About Us</h3>
-              <p>SuIDown Memecoin: The ultimate crypto cage match in the WWE arena of blockchain!</p>
+              <p>WWE Memecoin: The ultimate crypto cage match in the WWE arena of blockchain!</p>
               <p>No prelaunch, no team allocation—just pure degen chaos in a steel-cage throwdown!</p>
               <p>Future: Get ready for a blockchain Royal Rumble and PVP battles where degens clash for glory!</p>
               <p>Promises: Millionaires made overnight, $SUI to the MOON, and a championship belt for every holder!</p>
