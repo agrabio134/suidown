@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=1280, initial-scale=1.0" />
   <title>SuIDown Memecoin Arena</title>
   <link rel="icon" type="image/png" href="/logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
@@ -69,8 +69,7 @@
       bottom: 10px;
       left: 50%;
       transform: translateX(-50%);
-      width: 90%;
-      max-width: 300px;
+      width: 300px;
       padding: 10px;
       background: rgba(0, 0, 0, 0.9);
       border: 2px solid #ffd700;
@@ -158,7 +157,6 @@
       font-family: 'Anton', sans-serif;
       z-index: 20;
       text-align: center;
-      max-width: 90%;
       width: 300px;
       box-shadow: 0 0 15px #ffd700;
     }
@@ -176,24 +174,8 @@
 
     .css3d-iframe {
       pointer-events: auto;
-    }
-
-    @media (max-width: 768px) {
-      .ui-overlay button { padding: 6px 12px; font-size: 0.8rem; }
-      .news-hud { width: 95%; font-size: 0.7rem; padding: 8px; }
-      .social-links a { width: 25px; height: 25px; font-size: 1rem; }
-      .social-links a#tg-link:hover::after { font-size: 0.6rem; padding: 4px 8px; }
-      .info-panel { width: 95%; font-size: 0.8rem; }
-      .css3d-iframe { width: 640px; height: 360px; }
-    }
-
-    @media (max-width: 480px) {
-      .news-hud { bottom: 5px; font-size: 0.6rem; }
-      .ui-overlay button { font-size: 0.7rem; padding: 5px 10px; }
-      .social-links a { width: 20px; height: 20px; font-size: 0.9rem; }
-      .social-links a#tg-link:hover::after { font-size: 0.5rem; padding: 3px 6px; }
-      .info-panel { font-size: 0.7rem; padding: 10px; }
-      .css3d-iframe { width: 320px; height: 180px; }
+      width: 1280px;
+      height: 720px;
     }
   </style>
 </head>
@@ -245,8 +227,7 @@
     // Mouse/touch rotation with damping
     let isDragging = false;
     let previousPosition = { x: 0, y: 0 };
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    const mouseSensitivity = isMobile ? 0.0015 : 0.002;
+    const mouseSensitivity = 0.002;
     const dampingFactor = 0.1;
     let targetRotation = new THREE.Euler(camera.rotation.x, camera.rotation.y, 0);
     let currentRotation = new THREE.Euler().copy(targetRotation);
@@ -286,51 +267,15 @@
     renderer.domElement.addEventListener('touchmove', onDrag, { passive: false });
     renderer.domElement.addEventListener('touchend', endDrag);
 
-    // DeviceOrientationControls for mobile tilting
-    let deviceControls = null;
-    let useDeviceControls = false;
-    if (isMobile && window.DeviceOrientationEvent) {
-      try {
-        deviceControls = new THREE.DeviceOrientationControls(camera);
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-          document.getElementById('toggleSettings').addEventListener('click', () => {
-            DeviceOrientationEvent.requestPermission()
-              .then(response => {
-                if (response === 'granted') {
-                  useDeviceControls = true;
-                  deviceControls.enabled = true;
-                  camera.rotation.set(0, 0, 0);
-                  camera.lookAt(0, 2.0, -1);
-                  targetRotation.set(0, 0, 0);
-                  currentRotation.set(0, 0, 0);
-                }
-              })
-              .catch(err => console.error('DeviceOrientation permission error:', err));
-          });
-        } else {
-          useDeviceControls = true;
-          deviceControls.enabled = true;
-        }
-      } catch (err) {
-        console.error('DeviceOrientationControls init error:', err);
-      }
-    }
-
     // Initial note
     const initialNote = document.createElement('div');
     initialNote.className = 'info-panel';
-    initialNote.innerHTML = isMobile
-      ? `
-        <h3>Welcome to SuIDown Arena!</h3>
-        <p>For the best experience, use desktop. Mobile support is coming soon!</p>
-        <p>Swipe to rotate the view or click Toggle Settings to enable tilt controls.</p>
-        <button onclick="this.parentElement.remove()">Got it!</button>
-      `
-      : `
-        <h3>Welcome to SuIDown Arena!</h3>
-        <p>Click and drag to rotate the view.</p>
-        <button onclick="this.parentElement.remove()">Got it!</button>
-      `;
+    initialNote.innerHTML = `
+      <h3>Welcome to SuIDown Arena!</h3>
+      <p>Optimized for desktop browsers for the best experience.</p>
+      <p>Click and drag to rotate the view.</p>
+      <button onclick="this.parentElement.remove()">Got it!</button>
+    `;
     document.body.appendChild(initialNote);
 
     // Audio control
@@ -571,19 +516,12 @@
     function animate() {
       requestAnimationFrame(animate);
       try {
-        if (isMobile && useDeviceControls && deviceControls && deviceControls.enabled) {
-          deviceControls.update();
-          camera.position.set(0, 2.0, 0);
-          camera.rotation.y = THREE.MathUtils.clamp(camera.rotation.y, -Math.PI / 2, Math.PI / 2);
-          camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x, Math.PI / 4, 3 * Math.PI / 4);
-        } else {
-          camera.position.set(0, 2.0, 0);
-          const currentQuat = new THREE.Quaternion().setFromEuler(currentRotation);
-          const targetQuat = new THREE.Quaternion().setFromEuler(targetRotation);
-          currentQuat.slerp(targetQuat, dampingFactor);
-          currentRotation.setFromQuaternion(currentQuat);
-          camera.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z);
-        }
+        camera.position.set(0, 2.0, 0);
+        const currentQuat = new THREE.Quaternion().setFromEuler(currentRotation);
+        const targetQuat = new THREE.Quaternion().setFromEuler(targetRotation);
+        currentQuat.slerp(targetQuat, dampingFactor);
+        currentRotation.setFromQuaternion(currentQuat);
+        camera.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z);
         const positions = particleSystem.geometry.attributes.position.array;
         for (let i = 1; i < positions.length; i += 3) {
           positions[i] -= 0.01;
@@ -613,7 +551,7 @@
       settings.innerHTML = `
         <h3>Memecoin Settings</h3>
         <p>Graphics: High</p>
-        <p>Controls: ${isMobile ? 'Touch/Tilt' : 'Mouse'}</p>
+        <p>Controls: Mouse/Touch</p>
         <button onclick="this.parentElement.remove()">Close</button>
       `;
       document.body.appendChild(settings);
